@@ -13,8 +13,8 @@ function save_popup() {
         "wanikanify_srs": ["apprentice", "guru", "master", "enlighten"],
         "wanikanify_removeNumbers": "Yes"
     }
-    chrome.storage.sync.set(defaultOptions, function() {
-        chrome.browserAction.setPopup({popup:""});
+    browser.storage.sync.set(defaultOptions, function() {
+        browser.browserAction.setPopup({popup:""});
         window.close();
     });
 }    

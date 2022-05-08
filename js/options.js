@@ -72,7 +72,7 @@ function on_google_import(data, tabletop) {
     // Perform a lookup into the metadata to see what the columns and delimiters are.
     // When they clicked "import", the metadata was saved for that entry,
     // so we just grab it from the cache.
-    chrome.storage.sync.get("wanikanify_googleVocab_meta", function(items) {
+    browser.storage.sync.get("wanikanify_googleVocab_meta", function(items) {
         var delim = {};
         var from_column = {};
         var to_column = {};
@@ -317,9 +317,9 @@ function saveAllGoogleImported() {
     // Saves the imported vocab data.
     var obj = {};
     obj["wanikanify_googleVocabKey"] = {collections: allImportedVocabDictionaries};
-    chrome.storage.local.set(obj, function(data) {
+    browser.storage.local.set(obj, function(data) {
         console.log("Saved google data.");
-        if(chrome.runtime.lastError)
+        if(browser.runtime.lastError)
         {
             console.log("Could not save google data.");
             return;
@@ -380,7 +380,7 @@ function deleteGoogleMetadataEntry(spreadsheet_collection_key, sheet_name) {
     console.log("deleteGoogleMetadataEntry() - Spreadsheet collection key: " + spreadsheet_collection_key);
     console.log("deleteGoogleMetadataEntry() - Sheet name: " + sheet_name);
     // Retrieve the main metadata object from cache.
-    chrome.storage.sync.get("wanikanify_googleVocab_meta", function(items) {
+    browser.storage.sync.get("wanikanify_googleVocab_meta", function(items) {
         // If the main metadata object doesn't exist yet, bail.
         var meta_data_container = items.wanikanify_googleVocab_meta;
         if (!meta_data_container) {
@@ -407,12 +407,12 @@ function deleteGoogleMetadataEntry(spreadsheet_collection_key, sheet_name) {
             }
         }
 
-        // Save the main meta data object out to chrome storage with the deleted metadata entry.
+        // Save the main meta data object out to browser storage with the deleted metadata entry.
         console.log("deleteGoogleMetadataEntry() - Resaving all metadata.");
         var obj = {"wanikanify_googleVocab_meta": meta_data_container};
-        chrome.storage.sync.set(obj, function(data) {
+        browser.storage.sync.set(obj, function(data) {
             console.log("deleteGoogleMetadataEntry() - Saved all metadata.");
-            if(chrome.runtime.lastError)
+            if(browser.runtime.lastError)
             {
                 console.log("deleteGoogleMetadataEntry() - Could not save Google metadata.");
                 return;
@@ -427,7 +427,7 @@ function saveGoogleMetadataEntry(meta_data) {
     console.log("saveGoogleMetadataEntry() - Attempting to save: " + meta_data.spreadsheet_collection_key + ", " + meta_data.sheet_name);
     
     // Retrieve the main metadata object from cache.
-    chrome.storage.sync.get("wanikanify_googleVocab_meta", function(items) {
+    browser.storage.sync.get("wanikanify_googleVocab_meta", function(items) {
         // If the main metadata object doesn't exist yet, create one.
         var meta_data_container = items.wanikanify_googleVocab_meta;
         if (!meta_data_container) {
@@ -469,11 +469,11 @@ function saveGoogleMetadataEntry(meta_data) {
             found_data = meta_data;
         }
 
-        // Save the main meta data object out to chrome storage with the newly updated metadata entry.
+        // Save the main meta data object out to browser storage with the newly updated metadata entry.
         var obj = {"wanikanify_googleVocab_meta": meta_data_container};
-        chrome.storage.sync.set(obj, function(data) {
+        browser.storage.sync.set(obj, function(data) {
             console.log("saveGoogleMetadataEntry() - Saved Google metadata entry.");
-            if(chrome.runtime.lastError)
+            if(browser.runtime.lastError)
             {
                 console.log("saveGoogleMetadataEntry() - Could not save Google metadata.");
                 return;
@@ -521,26 +521,26 @@ function save_options() {
     $("#apiKeyControl").removeClass("error");
     $(".alert-error").hide();
 
-    chrome.storage.sync.set({"wanikanify_apiKey":apiKey});
-    chrome.browserAction.setPopup({popup:""});
+    browser.storage.sync.set({"wanikanify_apiKey":apiKey});
+    browser.browserAction.setPopup({popup:""});
 
     var runOn = $('input:radio[name=runOn]:checked').val();
-    chrome.storage.sync.set({"wanikanify_runOn":runOn});
+    browser.storage.sync.set({"wanikanify_runOn":runOn});
 
     var srs = $('input:checkbox[name=srs]:checked').map(function() {
         return this.value
     }).get();
-    chrome.storage.sync.set({"wanikanify_srs":srs});
+    browser.storage.sync.set({"wanikanify_srs":srs});
 
     var audio_on = $('input:checkbox[id=audio_on]:checked').val();
     var audio_click = $('input:radio[id=audio_on_click]:checked').val();
     var audio_settings = {};
     audio_settings["on"] = (audio_on)?true:false;
     audio_settings["clicked"] = (audio_click)?true:false;
-    chrome.storage.sync.set({"wanikanify_audio":audio_settings});
+    browser.storage.sync.set({"wanikanify_audio":audio_settings});
 
     var removeNumbers = $('input:radio[name=removeNumbers]:checked').val();
-    chrome.storage.sync.set({"wanikanify_removeNumbers":removeNumbers});
+    browser.storage.sync.set({"wanikanify_removeNumbers":removeNumbers});
 
     var blackList = $('#blackListTable input').map(function() {
         return $(this).val();
@@ -548,7 +548,7 @@ function save_options() {
         return value;
     }).get();
 
-    chrome.storage.sync.set({"wanikanify_blackList":blackList});
+    browser.storage.sync.set({"wanikanify_blackList":blackList});
 
     console.log("save_options() - Saving google metadata.");
     // There's the possibility the user didn't import any data.
@@ -559,13 +559,13 @@ function save_options() {
     console.log("save_options() - Saving custom vocab.");
     // Save the custom vocab data.
     var customVocab = $("#customVocab").val();
-    chrome.storage.sync.set({"wanikanify_customvocab":customVocab});
+    browser.storage.sync.set({"wanikanify_customvocab":customVocab});
 }
 
 // ------------------------------------------------------------------------------------------------
 function restore_options() {
     console.log("restore_options()");
-    chrome.storage.sync.get([
+    browser.storage.sync.get([
         "wanikanify_apiKey",
         "wanikanify_runOn",
         "wanikanify_audio",
@@ -630,7 +630,7 @@ function restore_options() {
                 $("#customVocab").val(customVocab);
             }
 
-            chrome.storage.local.get(["wanikanify_googleVocabKey"], function(local_items) {
+            browser.storage.local.get(["wanikanify_googleVocabKey"], function(local_items) {
                 // We restore metadata after the vocab data so we can populate
                 // the "imported count" field on the gui.
                 console.log("restore_options() - Restoring all imported google data.");
@@ -647,8 +647,8 @@ function restore_options() {
 
 async function test_api_key() {
     var userPromise = new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ type: "fetchUserObject" }, (userObject) => {
-            const error = chrome.runtime.lastError;
+        browser.runtime.sendMessage({ type: "fetchUserObject" }, (userObject) => {
+            const error = browser.runtime.lastError;
             if (error) {
                 console.error(error.message);
                 reject(error);
@@ -664,12 +664,12 @@ async function test_api_key() {
 // ------------------------------------------------------------------------------------------------
 function clear_cache() {
     console.log("clear_cache()");
-    chrome.storage.local.remove("wanikanify_vocab");
+    browser.storage.local.remove("wanikanify_vocab");
   
     // Do not clear the Google spreadsheet metadata entries. They can delete those manually.
     // But they'll know if stuff is imported based on the "imported" label that they can see.
     // Clearing the cache will remove all the imported data though.
-    chrome.storage.local.remove("wanikanify_googleVocabKey");
+    browser.storage.local.remove("wanikanify_googleVocabKey");
     // TODO: Update the "imported" labels.
 
     allImportedVocabDictionaries = {};

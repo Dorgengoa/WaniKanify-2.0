@@ -3,8 +3,8 @@ var executed = {}
 // Injects JS into the tab.
 // executeScripts : Object ->
 function executeScripts(tab) {
-    chrome.tabs.get(tab, function(details) {
-        chrome.storage.sync.get(['wanikanify_blackList'], function(items) {
+    browser.tabs.get(tab, function(details) {
+        browser.storage.sync.get(['wanikanify_blackList'], function(items) {
 
             function isBlackListed(details, items) {
                 var url = details.url;
@@ -23,9 +23,9 @@ function executeScripts(tab) {
 
 
             if (!isBlackListed(details, items)) {
-                chrome.tabs.executeScript(null, { file: "js/jquery.js" }, function() {
-                    chrome.tabs.executeScript(null, { file: "js/replaceText.js" }, function() {
-                        chrome.tabs.executeScript(null, { file: "js/content.js" }, function() {
+                browser.tabs.executeScript(null, { file: "js/jquery.js" }, function() {
+                    browser.tabs.executeScript(null, { file: "js/replaceText.js" }, function() {
+                        browser.tabs.executeScript(null, { file: "js/content.js" }, function() {
                             executed[tab] = "jp";
                         });
                     });
@@ -59,7 +59,7 @@ function loadOnUpdated(tab, change) {
 function setLanguage(lang) {
     var inner = "data-" + lang;
     var title = "data-" + (lang == "jp" ? "en" : "jp");
-    chrome.tabs.executeScript(null,
+    browser.tabs.executeScript(null,
         {code:"$(\".wanikanified\").each(function(index, value) { value.innerHTML = value.getAttribute('" + inner + "'); value.title = value.getAttribute('" + title + "'); })"});
 }
 
@@ -78,9 +78,9 @@ function buttonClicked(tab) {
 
 async function getApiKey() {
     return new Promise((resolve, reject) => {
-        chrome.storage.sync.get(["wanikanify_apiKey"], (items) => {
-            if (chrome.runtime.lastError) {
-                reject(chrome.runtime.lastError);
+        browser.storage.sync.get(["wanikanify_apiKey"], (items) => {
+            if (browser.runtime.lastError) {
+                reject(browser.runtime.lastError);
             } else {
                 resolve(items.wanikanify_apiKey);
             }
@@ -141,7 +141,7 @@ async function repeatPaginatedRequest(url, apiKey) {
 
 async function getCachedVocab() {
     return await new Promise((resolve, reject) => {
-        chrome.storage.local.get(["cachedWaniKaniVocab", "cacheCreationDate"], (cachedData) => {
+        browser.storage.local.get(["cachedWaniKaniVocab", "cacheCreationDate"], (cachedData) => {
             // check if data is no older than an hour (could be made configurable later, if there is demand for it)
             if (cachedData?.cachedWaniKaniVocab && (new Date() - cachedData.cacheCreationDate ) < 60 * 60 * 1000){
                 resolve(cachedData.cachedWaniKaniVocab);
@@ -153,7 +153,7 @@ async function getCachedVocab() {
 
 async function setCachedVocab(subjects) {
     return await new Promise((resolve, reject) => {
-        chrome.storage.local.set({ cachedWaniKaniVocab: subjects, cacheCreationDate: Date.now()});
+        browser.storage.local.set({ cachedWaniKaniVocab: subjects, cacheCreationDate: Date.now()});
     });
 }
 
@@ -212,7 +212,7 @@ async function getVocabListFromWaniKani(apiKey) {
     return subjects;
 }
 
-chrome.runtime.onMessage.addListener(
+browser.runtime.onMessage.addListener(
     function(request, sender, sendResponse) {
         if (request.type === "fetchVocab") {
             getApiKey()
@@ -231,36 +231,36 @@ chrome.runtime.onMessage.addListener(
 );
 
 // Always execute scripts when the action is clicked.
-chrome.browserAction.onClicked.addListener(buttonClicked);
+browser.browserAction.onClicked.addListener(buttonClicked);
 
 // Always listen for loads or reloads to clear from the cache
-chrome.tabs.onUpdated.addListener(clearStatus);
+browser.tabs.onUpdated.addListener(clearStatus);
 
 // Add a listener for storage changes. We may need to disable "auto" running.
-chrome.storage.onChanged.addListener(function(changes, store) {
+browser.storage.onChanged.addListener(function(changes, store) {
     var load = changes.wanikanify_runOn;
     if (load) {
         if (load.newValue == "onUpdated") {
-            chrome.tabs.onUpdated.addListener(loadOnUpdated);
+            browser.tabs.onUpdated.addListener(loadOnUpdated);
         } else {
-            chrome.tabs.onUpdated.removeListener(loadOnUpdated);
+            browser.tabs.onUpdated.removeListener(loadOnUpdated);
         }
     }
 });
 
 function toggleAutoLoad(info, tab) {
-    chrome.storage.sync.get("wanikanify_runOn", function(items) {
+    browser.storage.sync.get("wanikanify_runOn", function(items) {
         var load = items.wanikanify_runOn;
         var flip = (load == "onUpdated") ? "onClick" : "onUpdated";
-        chrome.storage.sync.set({"wanikanify_runOn":flip}, function() {
+        browser.storage.sync.set({"wanikanify_runOn":flip}, function() {
             var title = (flip == "onClick") ? "Enable autoload" : "Disable autoload";
-            chrome.contextMenus.update("wanikanify_context_menu", {title:title});
+            browser.contextMenus.update("wanikanify_context_menu", {title:title});
         });
     });
 }
 
 // Check the storage. We may already be in "auto" mode.
-chrome.storage.sync.get(["wanikanify_runOn","wanikanify_apiKey"], function(items) {
+browser.storage.sync.get(["wanikanify_runOn","wanikanify_apiKey"], function(items) {
     var context = {
         id: "wanikanify_context_menu",
         contexts: ["all"],
@@ -269,7 +269,7 @@ chrome.storage.sync.get(["wanikanify_runOn","wanikanify_apiKey"], function(items
 
     var load = items.wanikanify_runOn;
     if (load == "onUpdated") {
-        chrome.tabs.onUpdated.addListener(loadOnUpdated);
+        browser.tabs.onUpdated.addListener(loadOnUpdated);
         context.title = "Disable autoload";
     } else {
         context.title = "Enable autoload";
@@ -278,6 +278,6 @@ chrome.storage.sync.get(["wanikanify_runOn","wanikanify_apiKey"], function(items
     //chrome.contextMenus.create(context);
 
     if (!items.wanikanify_apiKey) {
-        chrome.browserAction.setPopup({popup:"popup.html"});
+        browser.browserAction.setPopup({popup:"popup.html"});
     }
 });

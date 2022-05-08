@@ -21,7 +21,7 @@ var FILTER_MAP = {
 // The main program driver.
 // main : Object ->
 function main(cache_local) {
-    chrome.storage.sync.get([API_KEY, SRS_KEY, CUST_VOCAB_KEY, GOOG_VOCAB_META_KEY, AUDIO_KEY, REMOVENUMBERS_KEY], async function(cache_sync) {
+    browser.storage.sync.get([API_KEY, SRS_KEY, CUST_VOCAB_KEY, GOOG_VOCAB_META_KEY, AUDIO_KEY, REMOVENUMBERS_KEY], async function(cache_sync) {
         var apiKey = cache_sync[API_KEY];
         if (!apiKey) {
             console.error("No API key provided! Please use the options page to specify your API key.");
@@ -231,8 +231,8 @@ async function tryWaniKani(apiKey) {
     }
 
     return new Promise((resolve, reject) => {
-        chrome.runtime.sendMessage({ type: "fetchVocab" }, (vocabList) => {
-            const error = chrome.runtime.lastError;
+        browser.runtime.sendMessage({ type: "fetchVocab" }, (vocabList) => {
+            const error = browser.runtime.lastError;
             if (error) {
                 console.error(error.message);
                 reject(error);
@@ -254,7 +254,7 @@ function cacheVocabList(vocabList) {
         "vocabList": vocabList
     };
 
-    chrome.storage.local.set(obj);
+    browser.storage.local.set(obj);
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -430,4 +430,4 @@ function buildDictionaryCallback(
 }
 
 // kick off the program
-chrome.storage.local.get([VOCAB_KEY, GOOG_VOCAB_KEY], main);
+browser.storage.local.get([VOCAB_KEY, GOOG_VOCAB_KEY], main);
